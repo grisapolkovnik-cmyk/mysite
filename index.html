@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Вход – Аккаунты Google</title>
+<style>
+  :root{
+    --blue:#1a73e8;
+    --blue-dark:#185abc;
+    --text:#202124;
+    --muted:#5f6368;
+    --border:#dadce0;
+    --error:#d93025;
+    --hover:#f7f8f8;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:Roboto,"Google Sans",Arial,sans-serif;
+    background:#fff;
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .card{
+    width:100%;
+    max-width:448px;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:28px;
+    padding:40px 40px 36px;
+    box-shadow:0 4px 12px rgba(0,0,0,.15);
+  }
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+  .brand svg{width:24px;height:24px;display:block}
+  .brand span{
+    font-family:"Google Sans",Roboto,Arial,sans-serif;
+    font-size:16px;font-weight:500;color:var(--text);
+  }
+  .notice{
+    display:flex;gap:12px;align-items:flex-start;
+    background:#fef7e0;
+    border:1px solid #f9d27a;
+    border-radius:8px;
+    padding:12px 14px;
+    margin-bottom:24px;
+    font-size:14px;
+    line-height:1.45;
+    color:#5c4400;
+  }
+  .notice .ic{
+    flex:0 0 auto;width:20px;height:20px;border-radius:50%;
+    background:#f9ab00;color:#fff;display:grid;place-items:center;
+    font-weight:700;font-size:13px;margin-top:1px;
+  }
+  h1{
+    font-family:"Google Sans",Roboto,Arial,sans-serif;
+    font-size:24px;line-height:1.3333;font-weight:400;
+    margin:0 0 8px;color:var(--text);
+  }
+  .sub{font-size:16px;line-height:1.5;color:var(--text);margin:0 0 24px}
+  .field-wrap{position:relative;margin:0 0 12px}
+  .field{
+    width:100%;height:56px;
+    border:1px solid var(--border);border-radius:4px;
+    padding:22px 14px 8px;
+    font:inherit;font-size:16px;color:var(--text);
+    background:#fff;outline:none;
+    transition:border-color .12s ease, box-shadow .12s ease;
+  }
+  .field:focus{border-color:var(--blue);box-shadow:inset 0 0 0 1px var(--blue)}
+  .field-label{
+    position:absolute;left:14px;top:50%;transform:translateY(-50%);
+    font-size:16px;color:var(--muted);pointer-events:none;
+    background:#fff;padding:0 4px;transition:all .12s ease;
+  }
+  .field:focus + .field-label,
+  .field:not(:placeholder-shown) + .field-label{
+    top:0;font-size:12px;color:var(--blue);
+  }
+  .field.error{border-color:var(--error);box-shadow:inset 0 0 0 1px var(--error)}
+  .field.error + .field-label{color:var(--error)}
+  .err{
+    display:none;font-size:12px;line-height:1.4;color:var(--error);
+    margin:-6px 0 10px 2px;
+  }
+  .err.show{display:block}
+  .hint{
+    display:flex;align-items:center;gap:6px;
+    font-size:12px;line-height:1.4;color:var(--muted);
+    margin:0 0 4px;
+  }
+  .hint a{color:var(--blue);text-decoration:none}
+  .hint a:hover{text-decoration:underline}
+  .actions{display:flex;justify-content:space-between;align-items:center;margin-top:32px}
+  .actions-left{display:flex;gap:8px;align-items:center}
+  .btn-text{
+    height:36px;padding:0 8px;border:0;background:transparent;
+    color:var(--blue);font:inherit;font-size:14px;font-weight:500;
+    border-radius:4px;cursor:pointer;
+    font-family:"Google Sans",Roboto,Arial,sans-serif;
+  }
+  .btn-text:hover{background:rgba(26,115,232,.04)}
+  .btn-primary{
+    height:36px;padding:0 24px;border:0;border-radius:4px;
+    background:var(--blue);color:#fff;font:inherit;font-size:14px;font-weight:500;
+    cursor:pointer;font-family:"Google Sans",Roboto,Arial,sans-serif;
+    transition:background .12s ease, box-shadow .12s ease;
+  }
+  .btn-primary:hover{background:var(--blue-dark);box-shadow:0 1px 2px rgba(60,64,67,.3)}
+  .footer{
+    display:flex;justify-content:space-between;align-items:center;gap:16px;
+    margin-top:32px;font-size:12px;line-height:1.4;color:var(--muted);
+  }
+  .footer .lang{padding:6px 8px;border-radius:4px;color:var(--muted);text-decoration:none}
+  .footer .lang:hover{background:var(--hover)}
+  .footer .links{display:flex;gap:16px}
+  .footer .links a{color:var(--muted);text-decoration:none}
+  .footer .links a:hover{text-decoration:underline}
+  .demo{
+    margin-top:24px;font-size:11px;line-height:1.4;color:#9aa0a6;
+    text-align:center;
+  }
+  .demo::before{content:"DEMO · локальный макет · не Google · данные никуда не отправляются · ";}
+  .hidden{display:none !important}
+  .account-chip{
+    display:flex;align-items:center;gap:10px;
+    padding:8px 12px;border:1px solid var(--border);border-radius:999px;
+    width:fit-content;font-size:14px;margin:0 0 20px;
+  }
+  .account-chip .dot{
+    width:24px;height:24px;border-radius:50%;background:var(--blue);
+    color:#fff;display:grid;place-items:center;font-size:12px;font-weight:500;
+  }
+  .loading{
+    display:flex;flex-direction:column;align-items:center;
+    justify-content:center;padding:32px 0 16px;text-align:center;
+  }
+  .spinner{
+    width:40px;height:40px;border-radius:50%;
+    border:3px solid #dadce0;border-top-color:var(--blue);
+    animation:spin .9s linear infinite;margin-bottom:20px;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading p{font-size:14px;color:var(--muted);margin:0;line-height:1.5}
+  .neterror{padding:8px 0 4px}
+  .neterror .icon{
+    width:48px;height:48px;border-radius:50%;background:#fce8e6;
+    color:var(--error);display:grid;place-items:center;
+    font-size:24px;font-weight:700;margin:0 0 16px;
+  }
+  .neterror h2{
+    font-family:"Google Sans",Roboto,Arial,sans-serif;
+    font-size:22px;font-weight:400;margin:0 0 12px;
+  }
+  .neterror ul{
+    margin:0 0 20px;padding-left:20px;font-size:14px;line-height:1.6;color:var(--muted);
+  }
+  .neterror ul li{margin-bottom:6px}
+  .neterror .code{
+    font-size:12px;color:#9aa0a6;margin:16px 0 0;
+  }
+  .neterror .actions{justify-content:flex-end}
+  #jsStatus{
+    position:fixed;bottom:8px;left:8px;
+    font-size:11px;color:#9aa0a6;
+    background:#fff;border:1px solid #e8eaed;border-radius:6px;
+    padding:4px 8px;opacity:.85;z-index:9999;
+  }
+  @media (max-width:480px){
+    body{padding:0;align-items:flex-start}
+    .card{border:0;box-shadow:none;border-radius:0;padding:24px 24px 32px;max-width:none}
+    .brand{margin-bottom:20px}
+    h1{font-size:22px}
+  }
+</style>
+</head>
+<body>
+<main class="card" role="main">
+
+  <!-- Экран 1: почта -->
+  <section id="screen-email">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.57c2.08-1.92 3.28-4.74 3.28-8.09Z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.76c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z" fill="#34A853"/>
+        <path d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84Z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.2 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.05l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z" fill="#EA4335"/>
+      </svg>
+      <span>Аккаунты Google</span>
+    </div>
+
+    <div class="notice" role="status">
+      <span class="ic" aria-hidden="true">!</span>
+      <span>Вход через Google-аккаунты временно недоступен из-за технических проблем. Войдите с помощью адреса электронной почты и пароля.</span>
+    </div>
+
+    <h1>Вход</h1>
+    <p class="sub">Используйте аккаунт Google</p>
+
+    <div class="field-wrap">
+      <input class="field" id="emailInput" type="email" placeholder=" " autocomplete="username" spellcheck="false">
+      <label class="field-label" for="emailInput">Электронная почта или телефон</label>
+    </div>
+    <p class="err" id="emailErr">Введите адрес электронной почты.</p>
+
+    <p class="hint">
+      <span>Забыли адрес электронной почты?</span>
+      <a href="#" onclick="return false;">Восстановить аккаунт</a>
+    </p>
+
+    <div class="actions">
+      <div class="actions-left">
+        <button class="btn-text" type="button" onclick="return false;">Создать аккаунт</button>
+      </div>
+      <button class="btn-primary" id="emailNext" type="button">Далее</button>
+    </div>
+
+    <div class="footer">
+      <a class="lang" href="#" onclick="return false;">Русский</a>
+      <div class="links">
+        <a href="#" onclick="return false;">Справка</a>
+        <a href="#" onclick="return false;">Конфиденциальность</a>
+        <a href="#" onclick="return false;">Условия</a>
+      </div>
+    </div>
+    <p class="demo">Локальный макет для разработки.</p>
+  </section>
+
+  <!-- Экран 2: пароль -->
+  <section id="screen-password" class="hidden">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.57c2.08-1.92 3.28-4.74 3.28-8.09Z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.76c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z" fill="#34A853"/>
+        <path d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84Z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.2 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.05l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z" fill="#EA4335"/>
+      </svg>
+      <span>Аккаунты Google</span>
+    </div>
+
+    <div class="account-chip">
+      <span class="dot" id="chipInitial" aria-hidden="true">?</span>
+      <span id="chipEmail">—</span>
+    </div>
+
+    <h1>Добро пожаловать</h1>
+
+    <div class="field-wrap">
+      <input class="field" id="passwordInput" type="password" placeholder=" " autocomplete="current-password">
+      <label class="field-label" for="passwordInput">Введите пароль</label>
+    </div>
+    <p class="err" id="passwordErr">Введите пароль.</p>
+
+    <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);margin:4px 0 0;">
+      <input type="checkbox" id="showPassword" style="width:16px;height:16px;">
+      Показать пароль
+    </label>
+
+    <div class="actions">
+      <div class="actions-left">
+        <button class="btn-text" id="backToEmail" type="button">Назад</button>
+      </div>
+      <button class="btn-primary" id="passwordNext" type="button">Далее</button>
+    </div>
+
+    <div class="footer">
+      <a class="lang" href="#" onclick="return false;">Русский</a>
+      <div class="links">
+        <a href="#" onclick="return false;">Справка</a>
+        <a href="#" onclick="return false;">Конфиденциальность</a>
+        <a href="#" onclick="return false;">Условия</a>
+      </div>
+    </div>
+    <p class="demo">Локальный макет для разработки.</p>
+  </section>
+
+  <!-- Экран 3: загрузка -->
+  <section id="screen-loading" class="hidden">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.57c2.08-1.92 3.28-4.74 3.28-8.09Z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.76c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z" fill="#34A853"/>
+        <path d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84Z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.2 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.05l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z" fill="#EA4335"/>
+      </svg>
+      <span>Аккаунты Google</span>
+    </div>
+
+    <div class="loading">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Выполняется вход…</p>
+    </div>
+  </section>
+
+  <!-- Экран 4: ошибка сети -->
+  <section id="screen-neterror" class="hidden">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.57c2.08-1.92 3.28-4.74 3.28-8.09Z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.76c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23Z" fill="#34A853"/>
+        <path d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84Z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.2 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.05l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z" fill="#EA4335"/>
+      </svg>
+      <span>Аккаунты Google</span>
+    </div>
+
+    <div class="neterror">
+      <div class="icon" aria-hidden="true">!</div>
+      <h2>Похоже, у вас возникли проблемы с интернетом</h2>
+      <ul>
+        <li>Проверьте подключение к интернету.</li>
+        <li>Перезагрузите страницу.</li>
+        <li>Попробуйте войти позже.</li>
+      </ul>
+      <p class="code">Код ошибки: ERR_NETWORK_TIMEOUT · DDS_LOCAL_DEMO</p>
+      <div class="actions">
+        <button class="btn-primary" id="retryBtn" type="button">Перезагрузить страницу</button>
+      </div>
+    </div>
+
+    <div class="footer">
+      <a class="lang" href="#" onclick="return false;">Русский</a>
+      <div class="links">
+        <a href="#" onclick="return false;">Справка</a>
+        <a href="#" onclick="return false;">Конфиденциальность</a>
+        <a href="#" onclick="return false;">Условия</a>
+      </div>
+    </div>
+    <p class="demo">Локальный макет для разработки.</p>
+  </section>
+
+</main>
+
+<div id="jsStatus">JS: не загрузился</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function(){
+    var jsStatus = document.getElementById("jsStatus");
+    if(jsStatus){ jsStatus.textContent = "JS: загружен"; }
+
+    var screens = {
+      email: document.getElementById("screen-email"),
+      password: document.getElementById("screen-password"),
+      loading: document.getElementById("screen-loading"),
+      neterror: document.getElementById("screen-neterror")
+    };
+
+    function show(name){
+      Object.keys(screens).forEach(function(k){
+        screens[k].classList.toggle("hidden", k !== name);
+      });
+      window.scrollTo(0, 0);
+    }
+
+    var state = { email: "" };
+
+    var emailInput = document.getElementById("emailInput");
+    var emailErr = document.getElementById("emailErr");
+    var emailNext = document.getElementById("emailNext");
+
+    var passwordInput = document.getElementById("passwordInput");
+    var passwordErr = document.getElementById("passwordErr");
+    var passwordNext = document.getElementById("passwordNext");
+
+    function validateEmail(){
+      var v = emailInput.value.trim();
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){
+        emailInput.classList.add("error");
+        emailErr.classList.add("show");
+        emailInput.focus();
+        return null;
+      }
+      emailInput.classList.remove("error");
+      emailErr.classList.remove("show");
+      return v;
+    }
+
+    function goPassword(){
+      var v = validateEmail();
+      if(v === null){ return; }
+      state.email = v;
+
+      var initial = (v.charAt(0) || "?").toUpperCase();
+      document.getElementById("chipEmail").textContent = v;
+      document.getElementById("chipInitial").textContent = initial;
+
+      show("password");
+      setTimeout(function(){ passwordInput.focus(); }, 0);
+    }
+
+    emailNext.addEventListener("click", goPassword);
+    emailInput.addEventListener("keydown", function(e){
+      if(e.key === "Enter"){ e.preventDefault(); goPassword(); }
+    });
+    emailInput.addEventListener("input", function(){
+      if(emailInput.classList.contains("error") && emailInput.value.trim()){
+        emailInput.classList.remove("error");
+        emailErr.classList.remove("show");
+      }
+    });
+
+    function goLoading(){
+      var v = passwordInput.value;
+      if(v.length < 1){
+        passwordInput.classList.add("error");
+        passwordErr.classList.add("show");
+        passwordInput.focus();
+        return;
+      }
+      passwordInput.classList.remove("error");
+      passwordErr.classList.remove("show");
+
+      show("loading");
+
+      setTimeout(function(){
+        show("neterror");
+      }, 5000);
+    }
+
+    passwordNext.addEventListener("click", goLoading);
+    passwordInput.addEventListener("keydown", function(e){
+      if(e.key === "Enter"){ e.preventDefault(); goLoading(); }
+    });
+    passwordInput.addEventListener("input", function(){
+      if(passwordInput.classList.contains("error") && passwordInput.value.length > 0){
+        passwordInput.classList.remove("error");
+        passwordErr.classList.remove("show");
+      }
+    });
+
+    document.getElementById("showPassword").addEventListener("change", function(e){
+      passwordInput.type = e.target.checked ? "text" : "password";
+      passwordInput.focus();
+    });
+
+    document.getElementById("backToEmail").addEventListener("click", function(){
+      passwordInput.value = "";
+      show("email");
+      setTimeout(function(){ emailInput.focus(); }, 0);
+    });
+
+    document.getElementById("retryBtn").addEventListener("click", function(){
+      window.location.reload();
+    });
+  });
+</script>
+</body>
+</html>
